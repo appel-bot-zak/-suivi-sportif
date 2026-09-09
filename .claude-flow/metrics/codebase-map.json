@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-09-09T08:52:30.387Z",
+  "projectRoot": "C:\\Users\\ido_k\\Documents\\IA\\suivi-sportif",
+  "structure": {
+    "hasPackageJson": false,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1788943950387
+}
