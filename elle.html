@@ -90,6 +90,7 @@ input,select{font:inherit;color:inherit}
   text-align:center;padding:2px 0;color:#fff;font-weight:600}
 .exinfo{flex:1;min-width:0}
 .exinfo b{display:block;font-size:15.5px;font-weight:650;line-height:1.25}
+.subEn{font-size:11.5px;color:var(--mu);line-height:1.3}
 .exmeta{font-size:12.5px;color:var(--mu);margin-top:3px}
 .chev{font-size:13px;color:var(--mu);flex:none;padding:6px}
 .exbody{border-top:1px solid var(--bd);padding:13px}
@@ -278,20 +279,20 @@ const EXOS = [
   {id:'dinc_hal', nom:'Développé incliné haltères',     g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Haltères', inc:2.5},
   {id:'dinc_bar', nom:'Développé incliné barre',        g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Barre',    inc:2.5},
   {id:'dc_mach',   nom:'Développé couché machine',        g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5},
-  {id:'dinc_mach', nom:'Développé incliné machine',       g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5},
+  {id:'dinc_mach', nom:'Développé incliné machine',       g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5, nomEn:'Chest Press (incliné)'},
   {id:'dc_smith',  nom:'Développé couché barre guidée',   g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5},
-  {id:'presse_pec',nom:'Presse à pectoraux (machine)',  g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5},
+  {id:'presse_pec',nom:'Presse à pectoraux (machine)',  g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5, nomEn:'Chest Press'},
   {id:'dips',     nom:'Dips (machine assistée)',        g:'haut', pat:'push_h',  mus:'Pectoraux', mat:'Machine',  inc:2.5},
-  {id:'pecdeck',  nom:'Pec-deck / Butterfly',           g:'haut', pat:'fly',     mus:'Pectoraux', mat:'Machine',  inc:2.5},
+  {id:'pecdeck',  nom:'Pec-deck / Butterfly',           g:'haut', pat:'fly',     mus:'Pectoraux', mat:'Machine',  inc:2.5, nomEn:'Pectoral / Reverse Fly'},
   {id:'ecarte_p', nom:'Écarté à la poulie',             g:'haut', pat:'fly',     mus:'Pectoraux', mat:'Poulie',   inc:1.25},
   {id:'ecarte_h', nom:'Écarté haltères sur banc',       g:'haut', pat:'fly',     mus:'Pectoraux', mat:'Haltères', inc:2},
 
   // --- Dos ---
-  {id:'tir_vert', nom:'Tirage vertical poulie',         g:'haut', pat:'pull_v',  mus:'Dos',       mat:'Poulie',   inc:2.5},
+  {id:'tir_vert', nom:'Tirage vertical poulie',         g:'haut', pat:'pull_v',  mus:'Dos',       mat:'Poulie',   inc:2.5, nomEn:'Lat Pulldown'},
   {id:'tir_neutre',nom:'Tirage vertical prise neutre',  g:'haut', pat:'pull_v',  mus:'Dos',       mat:'Poulie',   inc:2.5},
-  {id:'traction', nom:'Traction assistée',              g:'haut', pat:'pull_v',  mus:'Dos',       mat:'Machine',  inc:2.5},
-  {id:'tir_horiz',nom:'Tirage horizontal poulie',       g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Poulie',   inc:2.5},
-  {id:'row_mach', nom:'Rowing machine assis',           g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Machine',  inc:2.5},
+  {id:'traction', nom:'Traction assistée',              g:'haut', pat:'pull_v',  mus:'Dos',       mat:'Machine',  inc:2.5, nomEn:'Assisted Chin & Dip'},
+  {id:'tir_horiz',nom:'Tirage horizontal poulie',       g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Poulie',   inc:2.5, nomEn:'Low Row'},
+  {id:'row_mach', nom:'Rowing machine assis',           g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Machine',  inc:2.5, nomEn:'Low Row'},
   {id:'row_hal',  nom:'Rowing haltère unilatéral',      g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Haltères', inc:2.5},
   {id:'row_poul_uni',nom:'Tirage horizontal unilatéral poulie',g:'haut',pat:'pull_h', mus:'Dos',       mat:'Poulie',   inc:1.25},
   {id:'row_barre',nom:'Rowing barre buste penché',      g:'haut', pat:'pull_h',  mus:'Dos',       mat:'Barre',    inc:2.5},
@@ -299,34 +300,34 @@ const EXOS = [
 
   // --- Épaules ---
   {id:'dev_mil',  nom:'Développé militaire haltères',   g:'haut', pat:'push_v',  mus:'Épaules',   mat:'Haltères', inc:2},
-  {id:'dev_mach', nom:'Développé épaules machine',      g:'haut', pat:'push_v',  mus:'Épaules',   mat:'Machine',  inc:2.5},
+  {id:'dev_mach', nom:'Développé épaules machine',      g:'haut', pat:'push_v',  mus:'Épaules',   mat:'Machine',  inc:2.5, nomEn:'Shoulder Press'},
   {id:'dev_barre',nom:'Développé militaire barre',      g:'haut', pat:'push_v',  mus:'Épaules',   mat:'Barre',    inc:2.5},
   {id:'elev_lat', nom:'Élévations latérales haltères',  g:'haut', pat:'lat_r',   mus:'Épaules',   mat:'Haltères', inc:1},
   {id:'elev_poul',nom:'Élévations latérales poulie',    g:'haut', pat:'lat_r',   mus:'Épaules',   mat:'Poulie',   inc:1.25},
-  {id:'elev_mach',nom:'Élévations latérales machine',   g:'haut', pat:'lat_r',   mus:'Épaules',   mat:'Machine',  inc:2.5},
+  {id:'elev_mach',nom:'Élévations latérales machine',   g:'haut', pat:'lat_r',   mus:'Épaules',   mat:'Machine',  inc:2.5, nomEn:'Delts Machine'},
   {id:'oiseau',   nom:'Oiseau / Reverse pec-deck',      g:'haut', pat:'rear_d',  mus:'Épaules',   mat:'Machine',  inc:2.5},
-  {id:'facepull', nom:'Face pull à la poulie',          g:'haut', pat:'rear_d',  mus:'Épaules',   mat:'Poulie',   inc:1.25},
+  {id:'facepull', nom:'Face pull à la poulie',          g:'haut', pat:'rear_d',  mus:'Épaules',   mat:'Poulie',   inc:1.25, nomEn:'Reverse Fly'},
 
   // --- Biceps ---
   {id:'curl_ez',  nom:'Curl barre EZ',                  g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Barre',    inc:1.25},
   {id:'curl_hal', nom:'Curl haltères assis',            g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Haltères', inc:1},
   {id:'curl_mart',nom:'Curl marteau',                   g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Haltères', inc:1},
-  {id:'curl_pup', nom:'Curl pupitre machine',           g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Machine',  inc:2.5},
-  {id:'curl_poul',nom:'Curl à la poulie basse',         g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Poulie',   inc:1.25},
+  {id:'curl_pup', nom:'Curl pupitre machine',           g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Machine',  inc:2.5, nomEn:'Arm Curl'},
+  {id:'curl_poul',nom:'Curl à la poulie basse',         g:'haut', pat:'biceps',  mus:'Biceps',    mat:'Poulie',   inc:1.25, nomEn:'Arm Curl'},
 
   // --- Triceps ---
-  {id:'ext_corde',nom:'Extension triceps à la corde',   g:'haut', pat:'triceps', mus:'Triceps',   mat:'Poulie',   inc:1.25},
+  {id:'ext_corde',nom:'Extension triceps à la corde',   g:'haut', pat:'triceps', mus:'Triceps',   mat:'Poulie',   inc:1.25, nomEn:'Triceps Pushdown'},
   {id:'ext_barre',nom:'Extension triceps poulie haute', g:'haut', pat:'triceps', mus:'Triceps',   mat:'Poulie',   inc:1.25},
   {id:'front',    nom:'Barre au front',                 g:'haut', pat:'triceps', mus:'Triceps',   mat:'Barre',    inc:1.25},
   {id:'dips_tri', nom:'Dips machine (triceps)',         g:'haut', pat:'triceps', mus:'Triceps',   mat:'Machine',  inc:2.5},
   {id:'dips_genoux',nom:'Dips avec levée de genoux',    g:'haut', pat:'triceps', mus:'Triceps',   mat:'Poids du corps', inc:1, sansPoids:true},
-  {id:'ext_mach',  nom:'Extension triceps machine',       g:'haut', pat:'triceps', mus:'Triceps',   mat:'Machine',  inc:2.5},
+  {id:'ext_mach',  nom:'Extension triceps machine',       g:'haut', pat:'triceps', mus:'Triceps',   mat:'Machine',  inc:2.5, nomEn:'Arm Extension'},
   {id:'ext_nuque',nom:'Extension nuque haltère',        g:'haut', pat:'triceps', mus:'Triceps',   mat:'Haltères', inc:2},
 
   // --- Quadriceps ---
-  {id:'presse',   nom:'Presse à cuisses',               g:'bas',  pat:'leg_p',   mus:'Quadriceps',mat:'Machine',  inc:5},
+  {id:'presse',   nom:'Presse à cuisses',               g:'bas',  pat:'leg_p',   mus:'Quadriceps',mat:'Machine',  inc:5, nomEn:'Leg Press'},
   {id:'presse_h', nom:'Presse à cuisses pieds hauts',   g:'bas',  pat:'leg_p',   mus:'Fessiers',  mat:'Machine',  inc:5},
-  {id:'hack',     nom:'Hack squat',                     g:'bas',  pat:'squat',   mus:'Quadriceps',mat:'Machine',  inc:5},
+  {id:'hack',     nom:'Hack squat',                     g:'bas',  pat:'squat',   mus:'Quadriceps',mat:'Machine',  inc:5, nomEn:'Hack Squat'},
   {id:'squat_smith',nom:'Squat à la barre guidée',        g:'bas',  pat:'squat',   mus:'Quadriceps',mat:'Machine',  inc:5},
   {id:'presse_uni',nom:'Presse à cuisses unilatérale',    g:'bas',  pat:'leg_p',   mus:'Quadriceps',mat:'Machine',  inc:2.5},
   {id:'fente_smith',nom:'Fente à la barre guidée',        g:'bas',  pat:'lunge',   mus:'Fessiers',  mat:'Machine',  inc:2.5},
@@ -334,31 +335,31 @@ const EXOS = [
   {id:'squat_gob',nom:'Squat gobelet haltère',          g:'bas',  pat:'squat',   mus:'Quadriceps',mat:'Haltères', inc:2.5},
   {id:'fentes',   nom:'Fentes marchées haltères',       g:'bas',  pat:'lunge',   mus:'Quadriceps',mat:'Haltères', inc:2},
   {id:'bulgare',  nom:'Fente bulgare',                  g:'bas',  pat:'lunge',   mus:'Fessiers',  mat:'Haltères', inc:2},
-  {id:'leg_ext',  nom:'Leg extension',                  g:'bas',  pat:'knee_e',  mus:'Quadriceps',mat:'Machine',  inc:2.5},
+  {id:'leg_ext',  nom:'Leg extension',                  g:'bas',  pat:'knee_e',  mus:'Quadriceps',mat:'Machine',  inc:2.5, nomEn:'Leg Extension'},
 
   // --- Ischios / Fessiers ---
-  {id:'leg_curl_a',nom:'Leg curl allongé',              g:'bas',  pat:'knee_f',  mus:'Ischios',   mat:'Machine',  inc:2.5},
-  {id:'leg_curl_s',nom:'Leg curl assis',                g:'bas',  pat:'knee_f',  mus:'Ischios',   mat:'Machine',  inc:2.5},
+  {id:'leg_curl_a',nom:'Leg curl allongé',              g:'bas',  pat:'knee_f',  mus:'Ischios',   mat:'Machine',  inc:2.5, nomEn:'Leg Curl'},
+  {id:'leg_curl_s',nom:'Leg curl assis',                g:'bas',  pat:'knee_f',  mus:'Ischios',   mat:'Machine',  inc:2.5, nomEn:'Seated Leg Curl'},
   {id:'sdt_roum', nom:'Soulevé de terre roumain',       g:'bas',  pat:'hinge',   mus:'Ischios',   mat:'Barre',    inc:5},
   {id:'sdt_hal',  nom:'Soulevé de terre roumain haltères',g:'bas',pat:'hinge',   mus:'Ischios',   mat:'Haltères', inc:2.5},
   {id:'sdt_poulie',nom:'Soulevé de terre roumain à la poulie',g:'bas', pat:'hinge',   mus:'Ischios',   mat:'Poulie',   inc:2.5},
-  {id:'hyper',    nom:'Extension lombaire au banc',      g:'bas',  pat:'hinge',   mus:'Ischios',   mat:'Poids du corps', inc:2.5, sansPoids:true},
+  {id:'hyper',    nom:'Extension lombaire au banc',      g:'bas',  pat:'hinge',   mus:'Ischios',   mat:'Poids du corps', inc:2.5, sansPoids:true, nomEn:'Lower Back'},
   {id:'good_m',   nom:'Good morning',                   g:'bas',  pat:'hinge',   mus:'Ischios',   mat:'Barre',    inc:2.5},
   {id:'hip_barre',nom:'Hip thrust barre',               g:'bas',  pat:'hip_t',   mus:'Fessiers',  mat:'Barre',    inc:5},
-  {id:'hip_mach', nom:'Hip thrust machine',             g:'bas',  pat:'hip_t',   mus:'Fessiers',  mat:'Machine',  inc:5},
-  {id:'abduct',   nom:'Abduction machine',              g:'bas',  pat:'abd',     mus:'Fessiers',  mat:'Machine',  inc:2.5},
-  {id:'adduct',   nom:'Adduction machine',              g:'bas',  pat:'add',     mus:'Fessiers',  mat:'Machine',  inc:2.5},
+  {id:'hip_mach', nom:'Hip thrust machine',             g:'bas',  pat:'hip_t',   mus:'Fessiers',  mat:'Machine',  inc:5, nomEn:'Hip Thrust'},
+  {id:'abduct',   nom:'Abduction machine',              g:'bas',  pat:'abd',     mus:'Fessiers',  mat:'Machine',  inc:2.5, nomEn:'Abductor'},
+  {id:'adduct',   nom:'Adduction machine',              g:'bas',  pat:'add',     mus:'Fessiers',  mat:'Machine',  inc:2.5, nomEn:'Adductor'},
   {id:'kickback', nom:'Kickback fessier poulie',        g:'bas',  pat:'abd',     mus:'Fessiers',  mat:'Poulie',   inc:1.25},
 
   // --- Mollets ---
-  {id:'mol_debout',nom:'Mollets debout machine',        g:'bas',  pat:'calf',    mus:'Mollets',   mat:'Machine',  inc:2.5},
-  {id:'mol_assis', nom:'Mollets assis',                 g:'bas',  pat:'calf',    mus:'Mollets',   mat:'Machine',  inc:2.5},
+  {id:'mol_debout',nom:'Mollets debout machine',        g:'bas',  pat:'calf',    mus:'Mollets',   mat:'Machine',  inc:2.5, nomEn:'Calf Machine'},
+  {id:'mol_assis', nom:'Mollets assis',                 g:'bas',  pat:'calf',    mus:'Mollets',   mat:'Machine',  inc:2.5, nomEn:'Seated Calf / Rotary Calf'},
   {id:'mol_presse',nom:'Mollets à la presse',           g:'bas',  pat:'calf',    mus:'Mollets',   mat:'Machine',  inc:5},
 
   // --- Gainage ---
   {id:'crunch_p', nom:'Crunch à la poulie',             g:'bas',  pat:'core',    mus:'Abdos',     mat:'Poulie',   inc:1.25},
   {id:'releve_j', nom:'Relevé de jambes suspendu',      g:'bas',  pat:'core',    mus:'Abdos',     mat:'Poids du corps', inc:1, sansPoids:true},
-  {id:'crunch_m', nom:'Crunch machine',                 g:'bas',  pat:'core',    mus:'Abdos',     mat:'Machine',  inc:2.5},
+  {id:'crunch_m', nom:'Crunch machine',                 g:'bas',  pat:'core',    mus:'Abdos',     mat:'Machine',  inc:2.5, nomEn:'Abdominal Crunch'},
 
   // --- Cardio (sans poids, sans répétitions) ---
   {id:'cardio_course',nom:'Course à pied',              g:'cardio', pat:'cardio', mus:'Cardio',  mat:'Cardio', cardio:true, sansPoids:true},
@@ -370,7 +371,7 @@ const EXOS = [
    proposé en priorité quand tu changes d'exercice. */
 const PREF={'Machine':0,'Poulie':1,'Poids du corps':2,'Haltères':3,'Barre':4};
 const guide=x=>PREF[x.mat]<=2;
-const triMat=(a,b)=>(PREF[a.mat]-PREF[b.mat])||a.nom.localeCompare(b.nom,'fr');
+const triMat=(a,b)=>((PREF[a.mat]??5)-(PREF[b.mat]??5))||a.nom.localeCompare(b.nom,'fr');
 
 /* ===== Programme par défaut : 4 séances / semaine, machines et poulies ===== */
 const PROGRAMME = [
@@ -590,12 +591,17 @@ function terminer(){
   const vol=rec.ex.reduce((a,e)=>a+e.series.reduce((x,s)=>x+s.poids*s.reps,0),0);
   const nser=rec.ex.reduce((a,e)=>a+e.series.length,0);
   const jour=S.prog.find(d=>d.key===rec.day);
+  const enRetard=sauvegardesEnRetard();
   openSheet('Séance terminée 💪',jour.nom+' · '+rec.dur+' min',`
     <div class="stats">
       <div class="stat"><b>+${gainXp}</b><span>XP gagnés</span></div>
       <div class="stat"><b>${nser}</b><span>séries</span></div>
       <div class="stat"><b>${Math.round(vol/100)/10}</b><span>tonnes</span></div>
     </div>
+    <div class="warn" style="display:flex;gap:10px;align-items:center;margin-top:14px">
+      <span style="font-size:20px">☁️</span><div style="flex:1">
+      <b>Pense à sauvegarder.</b><br>${enRetard} séance${enRetard>1?'s':''} non sauvegardée${enRetard>1?'s':''} — tes données restent uniquement sur cet appareil.</div></div>
+    <button class="btn sm" onclick="partager()">☁ Sauvegarder maintenant</button>
     ${nouveaux.length?`<div class="sect">Badge${nouveaux.length>1?'s':''} débloqué${nouveaux.length>1?'s':''}</div>
       ${nouveaux.map(b=>`<div class="row"><span style="font-size:26px">${b.ic}</span>
         <div class="t"><b>${esc(b.nom)}</b><span>${esc(b.d)}</span></div></div>`).join('')}`:''}
@@ -740,7 +746,7 @@ function carteExo(e,i){
   return `<div class="ex ${ouvert?'act':''} ${fini&&!ouvert?'fin':''} ${e.skip?'skip':''}">
     <div class="exhead">
       <div onclick="event.stopPropagation();photo('${e.id}')">${vignette(e.id)}</div>
-      <div class="exinfo" onclick="basculer(${i})"><b>${esc(E.nom)}</b>
+      <div class="exinfo" onclick="basculer(${i})"><b>${esc(E.nom)}</b>${E.nomEn?`<div class="subEn">${esc(E.nomEn)}</div>`:''}
         <div class="exmeta">${nb}/${e.sets} séries · ${e.lo}-${e.hi} rép. · ${esc(E.mat)}</div></div>
       <div class="chev" onclick="basculer(${i})">${ouvert?'▾':(fini?'<span style="color:var(--ok);font-size:16px">✓</span>':'▸')}</div>
     </div>${body}</div>`;
@@ -771,7 +777,7 @@ function carteCardio(e,i){
   return `<div class="ex ${ouvert?'act':''} ${fini&&!ouvert?'fin':''} ${e.skip?'skip':''}">
     <div class="exhead">
       <div class="thumb">🏃</div>
-      <div class="exinfo" onclick="basculer(${i})"><b>${esc(E.nom)}</b>
+      <div class="exinfo" onclick="basculer(${i})"><b>${esc(E.nom)}</b>${E.nomEn?`<div class="subEn">${esc(E.nomEn)}</div>`:''}
         <div class="exmeta">${e.c.d?resumeExo({cardio:true,duree:e.c.duree,distance:e.c.distance,pente:e.c.pente,cal:e.c.cal}):'Cardio'}</div></div>
       <div class="chev" onclick="basculer(${i})">${ouvert?'▾':(fini?'<span style="color:var(--ok);font-size:16px">✓</span>':'▸')}</div>
     </div>${body}</div>`;
@@ -834,31 +840,60 @@ function alternatives(exId){
     libres:  g? allExos().filter(x=>libre(x)&&!guide(x)&&(x.pat===E.pat||x.mus===E.mus)).sort(triMat):[]
   };
 }
+function groupesParMuscle(list){                // regroupe par muscle, dans l'ordre du catalogue
+  const ordre=[];
+  for(const x of allExos())if(!ordre.includes(x.mus))ordre.push(x.mus);
+  const map={};
+  list.forEach(x=>{(map[x.mus]=map[x.mus]||[]).push(x);});
+  return ordre.filter(m=>map[m]&&map[m].length).map(m=>({mus:m,items:map[m].sort(triMat)}));
+}
 function sheetRemplacer(i){
-  const e=S.cur.ex[i],E=exo(e.id),alt=alternatives(e.id);
-  const li=x=>{const d=derniere(x.id);
-    const dtxt=d?(x.sansPoids?' · dernière fois '+Math.max.apply(null,d.series.map(s=>s.reps))+' rép.':' · dernière fois '+fmt(Math.max.apply(null,d.series.map(s=>s.poids)))+' kg'):'';
-    return `<button class="opt" onclick="remplacer(${i},'${x.id}')">
-      ${vignette(x.id,1)}
-      <div class="t"><b>${esc(x.nom)}</b><span>${esc(x.mat)} · ${esc(x.mus)}${dtxt}</span></div>
-      <span class="pill">Choisir</span></button>`;};
+  const e=S.cur.ex[i],E=exo(e.id);
   openSheet("Machine occupée ?","Remplacer « "+E.nom+" » par un exercice équivalent",`
-    ${alt.proches.length?`<div class="sect">Même mouvement</div>${alt.proches.map(li).join('')}`:''}
-    ${alt.memeMuscle.length?`<div class="sect">Même muscle</div>${alt.memeMuscle.map(li).join('')}`:''}
-    ${alt.libres.length?`<div class="sect">Avec haltères ou barre</div>${alt.libres.map(li).join('')}`:''}
-    <div class="sect">Tout le catalogue</div>
     <input class="search" id="rech" placeholder="Rechercher un exercice…" oninput="filtrer(this.value,${i})">
+    <div id="alts"></div>
     <button class="btn sm ghost" onclick="sheetCreerExo('remplacer',{i:${i}})">+ Créer un exercice</button>
-    <div id="reslist">${allExos().filter(x=>x.g===E.g&&!x.cardio).sort(triMat).slice(0,40).map(li).join('')}</div>`);
+    <div id="reslist"></div>`);
+  filtrer('',i);
+}
+function ajouterExo(){
+  openSheet("Ajouter un exercice","Il s'ajoute à la fin de la séance du jour",
+    `<input class="search" id="rech" placeholder="Rechercher…" oninput="filtrer(this.value,-1)">
+     <div id="alts"></div>
+     <button class="btn sm ghost" onclick="sheetCreerExo('ajout',{})">+ Créer un exercice</button>
+     <div id="reslist"></div>`);
+  filtrer('',-1);
 }
 function filtrer(q,i){
   q=q.toLowerCase().trim();
-  const pool=i>=0?allExos().filter(x=>!x.cardio):allExos();
-  const l=pool.filter(x=>!q||x.nom.toLowerCase().includes(q)||x.mus.toLowerCase().includes(q)||x.mat.toLowerCase().includes(q)).sort(triMat);
-  $('#reslist').innerHTML=l.slice(0,50).map(x=>`<button class="opt" onclick="${i>=0?`remplacer(${i},'${x.id}')`:`ajouterId('${x.id}')`}">
+  const cur=i>=0?S.cur.ex[i]:null,E=cur?exo(cur.id):null,dedans=i>=0?S.cur.ex.map(x=>x.id):[];
+  const li=x=>{const d=i>=0?derniere(x.id):null;
+    const dtxt=d?(x.sansPoids?' · dernière fois '+Math.max.apply(null,d.series.map(s=>s.reps))+' rép.':' · dernière fois '+fmt(Math.max.apply(null,d.series.map(s=>s.poids)))+' kg'):'';
+    return `<button class="opt" onclick="${i>=0?`remplacer(${i},'${x.id}')`:`ajouterId('${x.id}')`}">
       ${x.cardio?'<div class="thumb" style="width:44px;height:44px;font-size:20px">🏃</div>':vignette(x.id,1)}
-      <div class="t"><b>${esc(x.nom)}</b><span>${esc(x.mat)} · ${esc(x.mus)}</span></div>
-      <span class="pill">Choisir</span></button>`).join('')||'<div class="empty">Aucun résultat</div>';
+      <div class="t"><b>${esc(x.nom)}</b>${x.nomEn?`<div class="subEn">${esc(x.nomEn)}</div>`:''}<span>${esc(x.mat)} · ${esc(x.mus)}${dtxt}</span></div>
+      <span class="pill">Choisir</span></button>`;};
+  if(!q){
+    if(i>=0){
+      const alt=alternatives(E.id);
+      const cardios=allExos().filter(x=>x.cardio&&x.id!==E.id&&!dedans.includes(x.id)).sort(triMat);
+      $('#alts').innerHTML=`
+        ${alt.proches.length?`<div class="sect">Même mouvement</div>${alt.proches.map(li).join('')}`:''}
+        ${alt.memeMuscle.length?`<div class="sect">Même muscle</div>${alt.memeMuscle.map(li).join('')}`:''}
+        ${alt.libres.length?`<div class="sect">Avec haltères ou barre</div>${alt.libres.map(li).join('')}`:''}
+        ${cardios.length?`<div class="sect">Cardio</div>${cardios.map(li).join('')}`:''}
+        <div class="sect">Tout le catalogue</div>`;
+      $('#reslist').innerHTML=allExos().filter(x=>x.g===E.g&&!x.cardio).sort(triMat).slice(0,40).map(li).join('');
+    }else{
+      $('#alts').innerHTML='';
+      const groupes=groupesParMuscle(allExos());
+      $('#reslist').innerHTML=groupes.map(g=>`<div class="sect">${esc(g.mus)}</div>${g.items.map(li).join('')}`).join('');
+    }
+    return;
+  }
+  $('#alts').innerHTML='';
+  const l=allExos().filter(x=>x.nom.toLowerCase().includes(q)||x.mus.toLowerCase().includes(q)||x.mat.toLowerCase().includes(q)).sort(triMat);
+  $('#reslist').innerHTML=l.slice(0,50).map(li).join('')||'<div class="empty">Aucun résultat</div>';
 }
 function remplacer(i,newId){
   const e=S.cur.ex[i];
@@ -870,13 +905,6 @@ function remplacer(i,newId){
       s:Array.from({length:sets},(_,j)=>({p:p.poids,r:p.goals[j],d:false}))};
   }
   openEx=i;saveCur();closeSheet();render();toast('Exercice remplacé');
-}
-function ajouterExo(){
-  openSheet("Ajouter un exercice","Il s'ajoute à la fin de la séance du jour",
-    `<input class="search" id="rech" placeholder="Rechercher…" oninput="filtrer(this.value,-1)">
-     <button class="btn sm ghost" onclick="sheetCreerExo('ajout',{})">+ Créer un exercice</button>
-     <div id="reslist"></div>`);
-  filtrer('',-1);
 }
 function ajouterId(id){
   const E=exo(id);
@@ -897,6 +925,7 @@ function formExo(vals){
   if(!creerCtx||creerCtx.mode!=='prog')mats.push('Cardio');
   return `
     <div class="field"><label>Nom</label><input type="text" id="nx_nom" style="width:170px;text-align:left" placeholder="Ex : Presse à mollets debout" value="${esc(vals.nom||'')}"></div>
+    <div class="field"><label>Nom technique<span>Optionnel — sous-titre, ex. nom anglais sur l'étiquette</span></label><input type="text" id="nx_nomen" style="width:170px;text-align:left" placeholder="Ex : Chest Press" value="${esc(vals.nomEn||'')}"></div>
     <div class="field"><label>Muscle</label><input type="text" id="nx_mus" style="width:170px;text-align:left" placeholder="Ex : Mollets" value="${esc(vals.mus||'')}"></div>
     <div class="field"><label>Matériel</label>
       <select id="nx_mat" onchange="majFormExo()">
@@ -946,10 +975,11 @@ function validerCreerExo(){
   const nom=$('#nx_nom').value.trim();
   if(!nom){toast('Indique un nom');return;}
   const mat=$('#nx_mat').value,mus=$('#nx_mus').value.trim()||'Perso';
+  const nomEn=$('#nx_nomen').value.trim();
   const cardio=mat==='Cardio',sansPoids=cardio||$('#nx_sp').checked;
   const inc=sansPoids?2.5:(+$('#nx_inc').value||2.5);
   const id='perso_'+Date.now();
-  S.exosPerso=(S.exosPerso||[]).concat({id:id,nom:nom,g:cardio?'cardio':$('#nx_g').value,pat:'perso',
+  S.exosPerso=(S.exosPerso||[]).concat({id:id,nom:nom,nomEn:nomEn,g:cardio?'cardio':$('#nx_g').value,pat:'perso',
     mus:mus,mat:mat,icon:iconChoisi,inc:inc,sansPoids:sansPoids,cardio:cardio,perso:true});
   saveExosPerso();
   const {mode,ctx}=creerCtx||{mode:'ajout',ctx:{}};
@@ -963,8 +993,9 @@ function validerEditerExo(id){
   const nom=$('#nx_nom').value.trim();
   if(!nom){toast('Indique un nom');return;}
   const mat=$('#nx_mat').value,mus=$('#nx_mus').value.trim()||'Perso';
+  const nomEn=$('#nx_nomen').value.trim();
   const cardio=mat==='Cardio',sansPoids=cardio||$('#nx_sp').checked;
-  Object.assign(E,{nom:nom,g:cardio?'cardio':$('#nx_g').value,mus:mus,mat:mat,icon:iconChoisi,
+  Object.assign(E,{nom:nom,nomEn:nomEn,g:cardio?'cardio':$('#nx_g').value,mus:mus,mat:mat,icon:iconChoisi,
     inc:sansPoids?E.inc:(+$('#nx_inc').value||2.5),sansPoids:sansPoids,cardio:cardio});
   saveExosPerso();closeSheet();render();toast('Exercice modifié');
 }
@@ -1285,7 +1316,8 @@ const jourCle=dt=>{const d=new Date(dt);return d.getFullYear()+'-'+String(d.getM
 /* Toutes les statistiques dérivées de l'historique, en une passe chronologique. */
 function stats(){
   const st={nb:S.log.length,series:0,tonnage:0,prs:0,best:{},premier:{},
-    parSemaine:{},parJour:{},dureeMax:0,seancePleine:false,typesFaits:new Set()};
+    parSemaine:{},parJour:{},dureeMax:0,seancePleine:false,seancePleineNb:0,typesFaits:new Set(),
+    seriesMus:{},prsMus:{}};
   for(const s of S.log){
     st.parJour[jourCle(s.date)]=(st.parJour[jourCle(s.date)]||0)+1;
     const w=semaineISO(s.date);st.parSemaine[w]=(st.parSemaine[w]||0)+1;
@@ -1295,14 +1327,17 @@ function stats(){
     for(const e of s.ex){
       if(e.cardio||!e.series||!e.series.length)continue;
       att+=e.sets;fait+=e.series.length;
-      for(const x of e.series){st.series++;st.tonnage+=x.poids*x.reps;}
+      const mus=exo(e.id).mus;
+      for(const x of e.series){st.series++;st.tonnage+=x.poids*x.reps;
+        st.seriesMus[mus]=(st.seriesMus[mus]||0)+1;}
       const top=e.series.reduce((a,b)=>(e1rm(e.id,b)>e1rm(e.id,a)?b:a));
       const e1=e1rm(e.id,top);
       if(st.premier[e.id]==null)st.premier[e.id]=top.poids;
       if(st.best[e.id]==null)st.best[e.id]={e1:e1,poids:top.poids,reps:top.reps,date:s.date};
-      else if(e1>st.best[e.id].e1+0.01){st.prs++;st.best[e.id]={e1:e1,poids:top.poids,reps:top.reps,date:s.date};}
+      else if(e1>st.best[e.id].e1+0.01){st.prs++;st.best[e.id]={e1:e1,poids:top.poids,reps:top.reps,date:s.date};
+        st.prsMus[mus]=(st.prsMus[mus]||0)+1;}
     }
-    if(att&&fait>=att)st.seancePleine=true;
+    if(att&&fait>=att){st.seancePleine=true;st.seancePleineNb++;}
   }
   st.xp=st.nb*50+st.series*10+st.prs*100;
   st.niveau=niveau(st.xp);
@@ -1337,20 +1372,38 @@ function semainesConsecutives(parSemaine){
 }
 
 /* ==================== Badges ==================== */
+const MUSCLES=[                              // pour les paliers de volume/force par groupe musculaire
+  {m:'Pectoraux', ic:'🎽'},{m:'Dos',       ic:'🦅'},{m:'Épaules',  ic:'🏔️'},
+  {m:'Biceps',    ic:'💪'},{m:'Triceps',   ic:'🥊'},{m:'Quadriceps',ic:'🦵'},
+  {m:'Fessiers',  ic:'🍑'},{m:'Ischios',   ic:'🐎'},{m:'Mollets',  ic:'🦶'},
+  {m:'Abdos',     ic:'🧊'}
+];
 const BADGES=[
   {c:'Assiduité',ic:'🥉',nom:'Premier pas',      d:'1 séance terminée',      v:s=>s.nb,cible:1},
+  {c:'Assiduité',ic:'🔰',nom:'Sur la lancée',    d:'3 séances',              v:s=>s.nb,cible:3},
   {c:'Assiduité',ic:'🎯',nom:'Ça devient sérieux',d:'5 séances',             v:s=>s.nb,cible:5},
   {c:'Assiduité',ic:'💪',nom:'Habitude prise',   d:'10 séances',             v:s=>s.nb,cible:10},
+  {c:'Assiduité',ic:'🧗',nom:'Ça grimpe',        d:'15 séances',             v:s=>s.nb,cible:15},
+  {c:'Assiduité',ic:'🥈',nom:'Bien lancé',       d:'20 séances',             v:s=>s.nb,cible:20},
   {c:'Assiduité',ic:'🏅',nom:'Régulier',         d:'25 séances',             v:s=>s.nb,cible:25},
+  {c:'Assiduité',ic:'🥇',nom:'Sur la bonne voie',d:'30 séances',             v:s=>s.nb,cible:30},
   {c:'Assiduité',ic:'🏆',nom:'Cinquantenaire',   d:'50 séances',             v:s=>s.nb,cible:50},
+  {c:'Assiduité',ic:'💎',nom:'Aguerri',          d:'75 séances',             v:s=>s.nb,cible:75},
   {c:'Assiduité',ic:'👑',nom:'Centurion',        d:'100 séances',            v:s=>s.nb,cible:100},
+  {c:'Assiduité',ic:'🦾',nom:'Force de la nature',d:'150 séances',           v:s=>s.nb,cible:150},
   {c:'Assiduité',ic:'🐐',nom:'Increvable',       d:'200 séances',            v:s=>s.nb,cible:200},
 
+  {c:'Régularité',ic:'🌱',nom:'Première semaine',d:'1 semaine d\'affilée',  v:s=>s.serie,cible:1},
   {c:'Régularité',ic:'📅',nom:'Deux semaines',   d:'2 semaines d\'affilée',  v:s=>s.serie,cible:2},
+  {c:'Régularité',ic:'🍀',nom:'Trois semaines',  d:'3 semaines d\'affilée',  v:s=>s.serie,cible:3},
   {c:'Régularité',ic:'📆',nom:'Un mois plein',   d:'4 semaines d\'affilée',  v:s=>s.serie,cible:4},
+  {c:'Régularité',ic:'🌤️',nom:'Six semaines',    d:'6 semaines d\'affilée',  v:s=>s.serie,cible:6},
   {c:'Régularité',ic:'🗓️',nom:'Deux mois',       d:'8 semaines d\'affilée',  v:s=>s.serie,cible:8},
   {c:'Régularité',ic:'⏳',nom:'Un trimestre',    d:'12 semaines d\'affilée', v:s=>s.serie,cible:12},
+  {c:'Régularité',ic:'🌻',nom:'Quatre mois',     d:'16 semaines d\'affilée', v:s=>s.serie,cible:16},
+  {c:'Régularité',ic:'🌾',nom:'Cinq mois',       d:'20 semaines d\'affilée', v:s=>s.serie,cible:20},
   {c:'Régularité',ic:'🧭',nom:'Six mois',        d:'26 semaines d\'affilée', v:s=>s.serie,cible:26},
+  {c:'Régularité',ic:'🌀',nom:'Semaine chargée', d:'3 séances en une semaine',v:s=>s.semaineMax,cible:3},
   {c:'Régularité',ic:'🌪️',nom:'Grosse semaine',  d:'5 séances en une semaine',v:s=>s.semaineMax,cible:5},
   {c:'Régularité',ic:'🔄',nom:'Cycle complet',   d:'Les 4 séances du programme',v:s=>s.typesFaits.size,cible:4},
 
@@ -1361,6 +1414,8 @@ const BADGES=[
   {c:'Volume',ic:'🌍',nom:'1000 tonnes',    d:'1000 t au total',          v:s=>s.tonnage/1000,cible:1000},
   {c:'Volume',ic:'🧱',nom:'Mille séries',   d:'1000 séries validées',     v:s=>s.series,cible:1000},
   {c:'Volume',ic:'⏱️',nom:'Séance longue',  d:'Une séance de 60 min',     v:s=>s.dureeMax,cible:60},
+  ...MUSCLES.map(({m,ic})=>({c:'Volume',ic:ic,nom:m+' entraîné',d:'150 séries validées sur '+m,
+    v:s=>s.seriesMus[m]||0,cible:150})),
 
   {c:'Force',ic:'⚡',nom:'Premier record',   d:'Battre un record',         v:s=>s.prs,cible:1},
   {c:'Force',ic:'🔥',nom:'Dix records',      d:'10 records battus',        v:s=>s.prs,cible:10},
@@ -1369,8 +1424,13 @@ const BADGES=[
   {c:'Force',ic:'📈',nom:'+25 %',            d:'+25 % sur un exercice',    v:s=>s.gainMax,cible:25},
   {c:'Force',ic:'📊',nom:'+50 %',            d:'+50 % sur un exercice',    v:s=>s.gainMax,cible:50},
   {c:'Force',ic:'🎢',nom:'Charge doublée',   d:'+100 % sur un exercice',   v:s=>s.gainMax,cible:100},
+  ...MUSCLES.map(({m,ic})=>({c:'Force',ic:ic,nom:'Record : '+m,d:'5 records battus sur '+m,
+    v:s=>s.prsMus[m]||0,cible:5})),
 
   {c:'Divers',ic:'✅',nom:'Sans rien lâcher',d:'Une séance à 100 % des séries',v:s=>s.seancePleine?1:0,cible:1},
+  {c:'Divers',ic:'🎖️',nom:'Trois sans faute',d:'3 séances à 100 % des séries', v:s=>s.seancePleineNb,cible:3},
+  {c:'Divers',ic:'📸',nom:'Album à moitié', d:'La moitié des machines photographiées',
+    v:s=>s.photosTotal?Math.round(s.photosProg/s.photosTotal*100):0,cible:50},
   {c:'Divers',ic:'📷',nom:'Album complet',   d:'Toutes les machines photographiées',v:s=>s.photosProg,cible:0}
 ];
 
