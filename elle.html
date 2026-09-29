@@ -485,10 +485,28 @@ const PICTO={
   'Poids du corps':'<circle cx="12" cy="5" r="2.5"/><path d="M12 8v6M12 14l-3 5M12 14l3 5M7 10h10"/>'
 };
 function picto(mat){return '<svg viewBox="0 0 24 24">'+(PICTO[mat]||PICTO['Machine'])+'</svg>';}
+/* Visuels de secours par pattern de mouvement : plus distinctifs que le picto
+   matériel générique, pour les mouvements où une silhouette d'appareil est
+   reconnaissable. Une vraie photo perso reste toujours prioritaire (vignette()). */
+const PICTO_PAT={
+  pull_v:'<path d="M12 3v6"/><path d="M6 3h12"/><path d="M6 9h12l-3 4M18 9l-3 4"/><rect x="9" y="17" width="6" height="3" rx="1"/>',
+  pull_h:'<rect x="3" y="15" width="7" height="3" rx="1"/><path d="M14 16h4M18 13v6M18 13l3-1M18 19l3 1"/>',
+  push_h:'<path d="M5 4v16"/><path d="M9 12h6"/><path d="M14 8l4 4-4 4"/><rect x="19" y="5" width="3" height="14" rx="1"/>',
+  push_v:'<path d="M5 20V6"/><path d="M12 16V9"/><path d="M8 11l4-4 4 4"/><rect x="18" y="7" width="3" height="12" rx="1"/>',
+  leg_p:'<path d="M4 18h6"/><path d="M10 18l9-9"/><path d="M17 6h4v4"/>',
+  squat:'<path d="M6 4v16M18 4v16M6 9h12"/><rect x="9" y="9" width="6" height="2.5" rx="1"/>',
+  knee_e:'<rect x="3" y="16" width="7" height="3" rx="1"/><path d="M14 17h5v-7"/><circle cx="19" cy="8" r="1.6"/>',
+  knee_f:'<rect x="2" y="10" width="11" height="3" rx="1"/><path d="M13 11q5 0 5 6"/><circle cx="18" cy="19" r="1.6"/>',
+  calf:'<rect x="9" y="3" width="6" height="3" rx="1"/><path d="M12 6v10"/><path d="M7 18h10"/><path d="M9 16l3-3 3 3"/>',
+  hip_t:'<rect x="2" y="17" width="8" height="3" rx="1"/><path d="M10 18q6 -2 9 -9"/><rect x="17" y="6" width="4" height="3" rx="1"/>',
+  abd:'<rect x="9" y="17" width="6" height="3" rx="1"/><path d="M12 17V11"/><path d="M12 11l-7 2M12 11l7 2"/>',
+  add:'<rect x="9" y="17" width="6" height="3" rx="1"/><path d="M12 17V11"/><path d="M12 11l-3 6M12 11l3 6"/>'
+};
+function pictoPat(pat){return PICTO_PAT[pat]?'<svg viewBox="0 0 24 24">'+PICTO_PAT[pat]+'</svg>':null;}
 function vignette(exId,petit){
   const E=exo(exId),ph=PH[exId];
   return `<div class="thumb ${petit?'sm':''}" ${petit?'style="width:44px;height:44px"':''}>`+
-    (ph?`<img src="${ph}" alt="">`:picto(E.icon||E.mat)+(petit?'':'<div class="add">photo</div>'))+'</div>';
+    (ph?`<img src="${ph}" alt="">`:(pictoPat(E.pat)||picto(E.icon||E.mat))+(petit?'':'<div class="add">photo</div>'))+'</div>';
 }
 
 /* ==================== Moteur de progression (le coach) ==================== */
