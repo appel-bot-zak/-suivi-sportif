@@ -136,11 +136,13 @@ input,select{font:inherit;color:inherit}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bgA);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-top:1px solid var(--bd);padding-bottom:var(--safe)}
-.nav .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-.nav button{padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+.nav .in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.nav button{position:relative;padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
   font-size:9.5px;font-weight:600;color:var(--mu)}
 .nav button .ic{font-size:19px;line-height:1}
 .nav button.on{color:var(--pr)}
+.nav .dot{position:absolute;top:4px;right:calc(50% - 19px);min-width:14px;height:14px;border-radius:7px;
+  background:var(--pr);color:var(--ink);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px}
 
 /* ---------- sheet ---------- */
 .sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -190,6 +192,7 @@ table.h td:last-child{text-align:right;color:var(--mu);font-variant-numeric:tabu
 .mini input{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px;
   font-size:13px;width:38px;text-align:center}
 .mini .x{color:var(--mu);padding:6px 4px;font-size:15px}
+.plan .x{color:var(--mu);padding:6px 4px;font-size:15px}
 .themes{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:4px 0}
 .theme{border:1.5px solid var(--bd);border-radius:13px;padding:11px;text-align:left;background:var(--s2)}
 .theme.on{border-color:var(--pr)}
@@ -238,6 +241,7 @@ table.h td:last-child{text-align:right;color:var(--mu);font-variant-numeric:tabu
   <div id="v-seance" class="hide"></div>
   <div id="v-progres" class="hide"></div>
   <div id="v-histo" class="hide"></div>
+  <div id="v-amis" class="hide"></div>
   <div id="v-regl" class="hide"></div>
 </div>
 
@@ -253,6 +257,7 @@ table.h td:last-child{text-align:right;color:var(--mu);font-variant-numeric:tabu
   <button data-v="seance"><span class="ic">🏋️</span>Séance</button>
   <button data-v="progres"><span class="ic">🏆</span>Progrès</button>
   <button data-v="histo"><span class="ic">📈</span>Historique</button>
+  <button data-v="amis"><span class="ic">👥</span>Amis<i class="dot hide" id="amisDot"></i></button>
   <button data-v="regl"><span class="ic">⚙️</span>Réglages</button>
 </div></div>
 
@@ -266,6 +271,8 @@ table.h td:last-child{text-align:right;color:var(--mu);font-variant-numeric:tabu
 <input type="file" accept="image/*" id="photoIn" class="hide">
 <input type="file" accept="application/json,.json" id="fileIn" class="hide">
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="src/social.js"></script>
 <script>
 
 /* ===== Bibliothèque d'exercices =====
@@ -378,35 +385,33 @@ const PROGRAMME = [
   { key:'u1', nom:'Upper 1', sous:'Pectoraux · Dos · Épaules · Bras', accent:'#ff7a2f', ex:[
     {id:'presse_pec', sets:4, lo:8,  hi:12},
     {id:'tir_vert',   sets:4, lo:8,  hi:12},
+    {id:'dinc_mach',  sets:3, lo:8,  hi:12},
     {id:'dev_mach',   sets:3, lo:8,  hi:12},
-    {id:'row_mach',   sets:3, lo:10, hi:12},
-    {id:'elev_mach',  sets:3, lo:12, hi:15},
     {id:'curl_pup',   sets:3, lo:10, hi:12},
     {id:'ext_corde',  sets:3, lo:10, hi:15}
   ]},
   { key:'l1', nom:'Lower 1', sous:'Quadriceps · Fessiers · Mollets', accent:'#3ba0ff', ex:[
     {id:'presse',     sets:4, lo:8,  hi:12},
     {id:'leg_curl_s', sets:3, lo:10, hi:12},
-    {id:'hack',       sets:3, lo:10, hi:12},
     {id:'leg_ext',    sets:3, lo:12, hi:15},
     {id:'abduct',     sets:3, lo:15, hi:20},
+    {id:'crunch_m',   sets:3, lo:15, hi:20},
     {id:'mol_debout', sets:4, lo:12, hi:15}
   ]},
   { key:'u2', nom:'Upper 2', sous:'Dos · Épaules · Pectoraux · Bras', accent:'#ff7a2f', ex:[
-    {id:'tir_horiz',  sets:4, lo:8,  hi:12},
-    {id:'dinc_mach',  sets:3, lo:8,  hi:12},
-    {id:'traction',   sets:3, lo:8,  hi:12},
+    {id:'dc_mach',    sets:4, lo:8,  hi:12},
+    {id:'row_mach',   sets:3, lo:10, hi:12},
     {id:'pecdeck',    sets:3, lo:12, hi:15},
-    {id:'facepull',   sets:3, lo:15, hi:20},
+    {id:'elev_mach',  sets:3, lo:12, hi:15},
     {id:'curl_poul',  sets:3, lo:10, hi:12},
     {id:'ext_mach',   sets:3, lo:10, hi:15}
   ]},
   { key:'l2', nom:'Lower 2', sous:'Fessiers · Ischios · Quadriceps', accent:'#3ba0ff', ex:[
-    {id:'hip_mach',   sets:4, lo:8,  hi:12},
+    {id:'hack',       sets:3, lo:10, hi:12},
     {id:'leg_curl_a', sets:3, lo:10, hi:15},
-    {id:'presse_h',   sets:3, lo:10, hi:15},
-    {id:'sdt_poulie', sets:3, lo:10, hi:12},
-    {id:'abduct',     sets:3, lo:15, hi:20},
+    {id:'leg_ext',    sets:3, lo:12, hi:15},
+    {id:'adduct',     sets:3, lo:15, hi:20},
+    {id:'hip_mach',   sets:4, lo:8,  hi:12},
     {id:'mol_assis',  sets:4, lo:15, hi:20}
   ]}
 ];
@@ -603,6 +608,7 @@ function terminer(){
   const i=S.prog.findIndex(d=>d.key===c.day);
   S.cfg.dayIdx=(i+1)%S.prog.length;
   S.cur=null;saveLog();saveCfg();saveCur();
+  socSyncSession(rec.dur,apres,nouveaux);
 
   // prochaines montées de charge
   const monte=[];
@@ -649,7 +655,7 @@ function bip(){try{const a=new(window.AudioContext||window.webkitAudioContext)()
 
 /* ==================== Navigation ==================== */
 function go(v){view=v;openSheetIfNone();
-  ['home','seance','progres','histo','regl'].forEach(k=>$('#v-'+k).classList.toggle('hide',k!==v));
+  ['home','seance','progres','histo','amis','regl'].forEach(k=>$('#v-'+k).classList.toggle('hide',k!==v));
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   $('#finish').classList.toggle('hide',!(v==='seance'&&S.cur));
   window.scrollTo(0,0);render();}
@@ -1292,12 +1298,13 @@ function render(){
   else if(view==='seance')renderSeance();
   else if(view==='progres')renderProgres();
   else if(view==='histo')renderHisto();
+  else if(view==='amis')renderAmis();
   else renderRegl();
   $('#finish').classList.toggle('hide',!(view==='seance'&&S.cur));
   $('#title').innerHTML=view==='home'
     ?esc(S.cfg.nom||NOM_DEFAUT)+(S.cfg.sousNom!==''?' <span style="font-weight:500;color:var(--mu);font-size:13.5px;letter-spacing:0">'+esc(S.cfg.sousNom||SOUS_DEFAUT)+'</span>':'')
     :esc({seance:S.cur?(S.prog.find(d=>d.key===S.cur.day)||{}).nom||'Séance':'Séance',
-          progres:'Progrès',histo:'Historique',regl:'Réglages'}[view]);
+          progres:'Progrès',histo:'Historique',amis:'Amis',regl:'Réglages'}[view]);
 }
 
 /* ==================== Événements ==================== */
@@ -1318,6 +1325,7 @@ $('#restSkip').addEventListener('click',stopRepos);
   }catch(e){S.prog=clone(PROGRAMME);}
   appliquerTheme(S.cfg.theme);
   go(S.cur?'seance':'home');
+  socInit();
 })();
 
 /* ==================== Progrès : XP, séries, badges, records ==================== */
