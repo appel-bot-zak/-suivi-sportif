@@ -49,14 +49,16 @@ drop policy if exists "profiles_select_self" on profiles;
 create policy "profiles_select_self" on profiles
   for select using (auth.uid() = id);
 
+-- Pseudo visible dès qu'une relation existe (amis acceptés ET demandes en
+-- attente dans les deux sens) : sinon le pseudo d'une demande reçue reste
+-- invisible côté client (bloqué par RLS), affichant un "—" à la place.
 drop policy if exists "profiles_select_friend" on profiles;
 create policy "profiles_select_friend" on profiles
   for select using (
     exists (
       select 1 from friendships f
-      where f.status = 'accepted'
-        and ((f.requester_id = auth.uid() and f.addressee_id = profiles.id)
-          or (f.addressee_id = auth.uid() and f.requester_id = profiles.id))
+      where (f.requester_id = auth.uid() and f.addressee_id = profiles.id)
+         or (f.addressee_id = auth.uid() and f.requester_id = profiles.id)
     )
   );
 

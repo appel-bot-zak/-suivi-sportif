@@ -609,7 +609,7 @@ function terminer(){
   const i=S.prog.findIndex(d=>d.key===c.day);
   S.cfg.dayIdx=(i+1)%S.prog.length;
   S.cur=null;saveLog();saveCfg();saveCur();
-  socSyncSession(rec.dur,apres,nouveaux);
+  socSyncSession(rec.dur,apres,nouveaux,prs,apres.niveau.n>avant.niveau.n);
 
   // prochaines montées de charge
   const monte=[];

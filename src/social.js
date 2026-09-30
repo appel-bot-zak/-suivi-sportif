@@ -11,7 +11,7 @@ const SUPABASE_URL='https://czhteqpnhiytpbhoywxh.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aHRlcXBuaGl5dHBiaG95d3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDEwMzIsImV4cCI6MjEwNjMxNzAzMn0.X-rHfXvi-nT9eXnmhpj3qC6AG9ttKVSEVxywVZ2myQw';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-let SOC={user:null,profile:null,friends:[],incoming:[],outgoing:[],ready:false,busy:false};
+let SOC={user:null,profile:null,friends:[],incoming:[],outgoing:[],feed:[],wavedEventIds:new Set(),unseenWaves:[],ready:false,busy:false};
 
 /* ---------- session ---------- */
 async function socInit(){
@@ -35,6 +35,7 @@ async function socApplySession(session){
     await socLoadFriends();
   }else{
     SOC.user=null;SOC.profile=null;SOC.friends=[];SOC.incoming=[];SOC.outgoing=[];
+    SOC.feed=[];SOC.wavedEventIds=new Set();SOC.unseenWaves=[];
   }
   SOC.busy=false;
   socUpdateNavBadge();
@@ -116,7 +117,66 @@ async function socLoadFriends(){
   SOC.friends=accepted.map(a=>({relId:a.relId,userId:a.userId,pseudo:pseudos[a.userId]||'—',summary:summaries[a.userId]||null}));
   SOC.incoming=incoming.map(i=>({relId:i.relId,userId:i.userId,pseudo:pseudos[i.userId]||'—'}));
   SOC.outgoing=outgoing.map(o=>({relId:o.relId,userId:o.userId,pseudo:pseudos[o.userId]||'—'}));
+  await socLoadFeed();
+  await socLoadUnseenWaves();
   socUpdateNavBadge();
+}
+
+/* ---------- fil d'activité & coucous ---------- */
+async function socLoadFeed(){
+  if(!SOC.user||!SOC.friends.length){SOC.feed=[];SOC.wavedEventIds=new Set();return;}
+  const friendIds=SOC.friends.map(f=>f.userId);
+  const since=new Date(Date.now()-30*864e5).toISOString();
+  const{data,error}=await sb.from('activity_events').select('id,user_id,type,payload,created_at')
+    .in('user_id',friendIds).gte('created_at',since).order('created_at',{ascending:false}).limit(50);
+  if(error){SOC.feed=[];SOC.wavedEventIds=new Set();return;}
+  SOC.feed=data||[];
+  if(SOC.feed.length){
+    const{data:mine}=await sb.from('waves').select('event_id').eq('sender_id',SOC.user.id).in('event_id',SOC.feed.map(e=>e.id));
+    SOC.wavedEventIds=new Set((mine||[]).map(w=>w.event_id));
+  }else SOC.wavedEventIds=new Set();
+}
+async function socLoadUnseenWaves(){
+  if(!SOC.user){SOC.unseenWaves=[];return;}
+  const{data}=await sb.from('waves').select('id,sender_id,created_at').eq('recipient_id',SOC.user.id).eq('seen',false);
+  SOC.unseenWaves=data||[];
+}
+function socMarkWavesSeen(){
+  if(!SOC.unseenWaves.length)return;
+  const ids=SOC.unseenWaves.map(w=>w.id);
+  SOC.unseenWaves=[];
+  sb.from('waves').update({seen:true}).in('id',ids).then(()=>{},()=>{});
+  socUpdateNavBadge();
+}
+async function socUiSendWave(eventId,recipientId){
+  if(SOC.wavedEventIds.has(eventId))return;
+  SOC.wavedEventIds.add(eventId); // optimiste ; un seul coucou par événement (contrainte unique côté serveur)
+  renderAmis();
+  try{
+    const{error}=await sb.from('waves').insert({sender_id:SOC.user.id,recipient_id:recipientId,event_id:eventId});
+    if(error&&!/duplicate|unique/i.test(error.message||''))throw error;
+  }catch(e){SOC.wavedEventIds.delete(eventId);renderAmis();toast(socFriendlyErr(e));}
+}
+function socFeedLabel(ev,pseudo){
+  const p=ev.payload||{};
+  if(ev.type==='session')return`🏋️ <b>${esc(pseudo)}</b> a terminé une séance <span class="mu">(${p.duree} min)</span>`;
+  if(ev.type==='badge')return`🏆 <b>${esc(pseudo)}</b> a débloqué <b>${esc(p.nom)}</b>`;
+  if(ev.type==='record')return`📈 <b>${esc(pseudo)}</b> a battu un record sur <b>${esc(p.exercice)}</b>`;
+  if(ev.type==='levelup')return`⬆️ <b>${esc(pseudo)}</b> est passé niveau <b>${p.niveau}</b>`;
+  return'';
+}
+function socFeedSection(){
+  if(!SOC.feed.length)return'';
+  const pseudos={};SOC.friends.forEach(f=>pseudos[f.userId]=f.pseudo);
+  return`<div class="sect">Fil d'activité</div>
+  <div class="card pad">${SOC.feed.map(ev=>`
+    <div class="row">
+      <div class="t" style="font-size:13px">${socFeedLabel(ev,pseudos[ev.user_id]||'—')}
+        <span class="mu" style="display:block;font-size:11px;margin-top:2px">${socFmtDate(ev.created_at)}</span></div>
+      <button class="iconbtn" title="${SOC.wavedEventIds.has(ev.id)?'Coucou envoyé':'Faire coucou'}"
+        ${SOC.wavedEventIds.has(ev.id)?'disabled':''}
+        onclick="socUiSendWave('${ev.id}','${ev.user_id}')">${SOC.wavedEventIds.has(ev.id)?'✅':'👋'}</button>
+    </div>`).join('')}</div>`;
 }
 
 /* ---------- synchro après séance ---------- */
@@ -126,36 +186,69 @@ function socRecordBadgeOrder(nouveaux){
   for(const b of nouveaux)if(!ordre.includes(b.nom))ordre.push(b.nom);
   S.cfg.badgesOrder=ordre;
 }
-function socBadgesRecents(st){
+function socBadgesInfo(st){
   const ordre=S.cfg.badgesOrder||[];
   const actuels=BADGES.filter(b=>b.v(st)>=(b.cible||st.photosTotal||1)).map(b=>b.nom);
   for(const nom of actuels)if(!ordre.includes(nom))ordre.push(nom); // rattrapage badges déjà débloqués avant ce suivi
   S.cfg.badgesOrder=ordre;
-  return ordre.filter(n=>actuels.includes(n)).slice(-4);
+  const tous=ordre.filter(n=>actuels.includes(n));
+  return{recents:tous.slice(-4),tous:tous};
 }
-async function socSyncSession(dureeMin,apres,nouveaux){
+/* Tendance de volume sur 4 semaines, exprimée en mots seulement (jamais un chiffre) :
+   compare les 2 semaines écoulées aux 2 précédentes. */
+function socVolumeTrend(){
+  const parSemaine={};
+  for(const s of S.log){
+    const w=semaineISO(s.date);let v=0;
+    for(const e of s.ex){if(e.cardio||!e.series)continue;for(const x of e.series)v+=x.poids*x.reps;}
+    parSemaine[w]=(parSemaine[w]||0)+v;
+  }
+  const now=new Date(),semaines=[];
+  for(let i=0;i<4;i++){const d=new Date(now);d.setDate(d.getDate()-7*i);semaines.push(parSemaine[semaineISO(d)]||0);}
+  const recent=semaines[0]+semaines[1],avant=semaines[2]+semaines[3];
+  if(recent===0)return'pause';
+  if(avant===0||recent>avant*1.1)return'hausse';
+  if(recent<avant*0.75)return'pause';
+  return'stable';
+}
+async function socSyncSession(dureeMin,apres,nouveaux,prs,leveledUp){
   socRecordBadgeOrder(nouveaux);
-  const badges=socBadgesRecents(apres);
+  const{recents,tous}=socBadgesInfo(apres);
+  const tendance=socVolumeTrend();
   saveCfg();
   if(!SOC.user)return;
   const payload={user_id:SOC.user.id,niveau:apres.niveau.n,xp:apres.xp,
     last_session_at:new Date().toISOString(),last_session_duree:dureeMin,
-    badges:badges,updated_at:new Date().toISOString()};
+    badges:recents,all_badges:tous,serie_hebdo:apres.serie,tendance_volume:tendance,
+    updated_at:new Date().toISOString()};
+  const events=[{user_id:SOC.user.id,type:'session',payload:{duree:dureeMin}}];
+  for(const b of(nouveaux||[]))events.push({user_id:SOC.user.id,type:'badge',payload:{nom:b.nom}});
+  for(const p of(prs||[]))events.push({user_id:SOC.user.id,type:'record',payload:{exercice:p.nom}});
+  if(leveledUp)events.push({user_id:SOC.user.id,type:'levelup',payload:{niveau:apres.niveau.n}});
   try{
     const{error}=await sb.from('session_summaries').upsert(payload);
     if(error)throw error;
+    const{error:eerr}=await sb.from('activity_events').insert(events);
+    if(eerr)throw eerr;
     await kdel('kv','socialPending');
   }catch(e){
-    await kset('kv','socialPending',payload);
+    await kset('kv','socialPending',{summary:payload,events:events});
   }
 }
 async function socRetryPendingSync(){
   if(!SOC.user||!navigator.onLine)return;
-  const pending=await kget('kv','socialPending');
-  if(!pending||pending.user_id!==SOC.user.id)return;
+  let pending=await kget('kv','socialPending');
+  if(!pending)return;
+  if(pending.user_id&&!pending.summary)pending={summary:pending,events:[]}; // compat avec l'ancien format
+  if(!pending.summary||pending.summary.user_id!==SOC.user.id)return;
   try{
-    const{error}=await sb.from('session_summaries').upsert(pending);
-    if(!error)await kdel('kv','socialPending');
+    const{error}=await sb.from('session_summaries').upsert(pending.summary);
+    if(error)throw error;
+    if(pending.events&&pending.events.length){
+      const{error:eerr}=await sb.from('activity_events').insert(pending.events);
+      if(eerr)throw eerr;
+    }
+    await kdel('kv','socialPending');
   }catch(e){}
 }
 
@@ -173,7 +266,7 @@ function socFriendlyErr(e){
 }
 function socUpdateNavBadge(){
   const dot=$('#amisDot');if(!dot)return;
-  const n=SOC.incoming.length;
+  const n=SOC.incoming.length+(SOC.unseenWaves?SOC.unseenWaves.length:0);
   dot.textContent=n>9?'9+':String(n);
   dot.classList.toggle('hide',!n);
 }
@@ -206,6 +299,8 @@ function renderAmis(){
     </div>
   </div>
 
+  ${socFeedSection()}
+
   <div class="card pad">
     <b style="font-size:14.5px">Ajouter un ami</b>
     <input class="search" id="soc_search" placeholder="Pseudo ou email…" oninput="socUiSearchDebounced(this.value)">
@@ -236,6 +331,7 @@ function renderAmis(){
     </button>`).join('')}</div>`
     :'<div class="empty"><span class="ic">👥</span>Aucun ami pour l’instant.<br>Cherche un pseudo ci-dessus pour envoyer une demande.</div>'}
   <div style="height:20px"></div>`;
+  socMarkWavesSeen(); // l'onglet Amis vient d'être ouvert : les coucous en attente sont considérés vus
 }
 function socUiErr(msg){const e=$('#soc_err');if(!e)return;e.textContent=msg;e.classList.remove('hide');}
 async function socUiSignIn(){
@@ -274,9 +370,24 @@ async function socUiSendRequest(id){
 }
 async function socUiAccept(relId){try{await socAccept(relId);renderAmis();toast('Ami ajouté');}catch(e){toast(socFriendlyErr(e));}}
 async function socUiRemove(relId){try{await socRemove(relId);renderAmis();}catch(e){toast(socFriendlyErr(e));}}
-function socUiOpenFriend(userId){
+async function socUiOpenFriend(userId){
   const f=SOC.friends.find(x=>x.userId===userId);if(!f)return;
   const s=f.summary;
+  let lastEvent=null;
+  try{
+    const{data}=await sb.from('activity_events').select('id,type,payload,created_at')
+      .eq('user_id',userId).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    lastEvent=data||null;
+  }catch(e){}
+  let waved=lastEvent&&SOC.wavedEventIds.has(lastEvent.id);
+  if(lastEvent&&!waved){
+    try{
+      const{data:mine}=await sb.from('waves').select('id').eq('sender_id',SOC.user.id).eq('event_id',lastEvent.id).maybeSingle();
+      if(mine){waved=true;SOC.wavedEventIds.add(lastEvent.id);}
+    }catch(e){}
+  }
+  const tousDebloques=(s&&s.all_badges)||[];
+  const tendanceTxt={hausse:'En hausse',stable:'Stable',pause:'En pause'}[s&&s.tendance_volume]||'—';
   openSheet(f.pseudo,'',`
     ${s?`
     <div class="stats">
@@ -285,13 +396,30 @@ function socUiOpenFriend(userId){
       <div class="stat"><b>${s.last_session_duree}</b><span>min (dernière séance)</span></div>
     </div>
     <div class="mu" style="text-align:center;margin-top:10px;font-size:12.5px">Dernière séance : ${socFmtDate(s.last_session_at)}</div>
+    <div class="stats" style="margin-top:12px">
+      <div class="stat"><b>${s.serie_hebdo||0}</b><span>sem. d'affilée</span></div>
+      <div class="stat"><b>${tendanceTxt}</b><span>Volume (4 sem.)</span></div>
+    </div>
     ${(s.badges&&s.badges.length)?`<div class="sect">Badges récents</div><div class="bg">${s.badges.map(nom=>{
       const b=BADGES.find(x=>x.nom===nom);
       return `<div class="badge on"><span class="ic">${b?b.ic:'🏅'}</span><b>${esc(nom)}</b></div>`;
-    }).join('')}</div>`:''}`
+    }).join('')}</div>`:''}
+    ${tousDebloques.length?`<div class="sect">Tous les badges — ${tousDebloques.length}/${BADGES.length}</div>
+    <div class="bg">${BADGES.map(b=>`
+      <div class="badge ${tousDebloques.includes(b.nom)?'on':'lock'}" onclick="toast('<b>${esc(b.nom)}</b><br>${esc(b.d)}')">
+        <span class="ic">${b.ic}</span><b>${esc(b.nom)}</b>
+      </div>`).join('')}</div>`:''}`
     :'<div class="empty">Cet ami n’a pas encore synchronisé de séance.</div>'}
+    ${lastEvent?`<button class="btn sm ghost" style="margin-top:16px" ${waved?'disabled':''}
+      onclick="socUiSendWaveFromProfile('${lastEvent.id}','${f.userId}',this)">${waved?'✅ Coucou envoyé':'👋 Dire coucou'}</button>`:''}
     <button class="btn sm ghost" style="margin-top:16px" onclick="socUiRemoveFromSheet('${f.relId}')">Retirer cet ami</button>
     <button class="btn sm ghost" onclick="closeSheet()">Fermer</button>`);
+}
+async function socUiSendWaveFromProfile(eventId,recipientId,btn){
+  if(SOC.wavedEventIds.has(eventId))return;
+  if(btn){btn.disabled=true;btn.textContent='✅ Coucou envoyé';}
+  await socUiSendWave(eventId,recipientId); // met à jour SOC.wavedEventIds + le fil en arrière-plan
+  if(!SOC.wavedEventIds.has(eventId)&&btn){btn.disabled=false;btn.textContent='👋 Dire coucou';} // échec : socUiSendWave a déjà averti par toast
 }
 async function socUiRemoveFromSheet(relId){
   if(!confirm('Retirer cet ami ?'))return;
