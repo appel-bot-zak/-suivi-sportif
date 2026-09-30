@@ -415,6 +415,11 @@ const PROGRAMME = [
     {id:'mol_assis',  sets:4, lo:15, hi:20}
   ]}
 ];
+/* Incrémenter à chaque changement du programme par défaut ci-dessus :
+   force une resynchro (une seule fois) chez les utilisateurs qui ont déjà
+   un programme sauvegardé localement, sinon leurs anciennes séances
+   restent figées même après un déploiement. */
+const PROG_VERSION = 2;
 
 'use strict';
 /* ==================== Stockage local (IndexedDB) ==================== */
@@ -1317,6 +1322,11 @@ $('#restSkip').addEventListener('click',stopRepos);
 (async function boot(){
   try{
     S.prog=await kget('kv','prog')||clone(PROGRAMME);
+    if((await kget('kv','progVersion'))!==PROG_VERSION){
+      S.prog=clone(PROGRAMME);
+      await kset('kv','progVersion',PROG_VERSION);
+      await saveProg();
+    }
     S.log =await kget('kv','log') ||[];
     S.cfg =Object.assign({rest:90,autoRest:true,dayIdx:0,theme:'orange',guide:true,objHebdo:4},await kget('kv','cfg')||{});
     S.cur =await kget('kv','cur') ||null;
