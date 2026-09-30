@@ -228,10 +228,13 @@ async function socSyncSession(dureeMin,apres,nouveaux,prs,leveledUp){
   try{
     const{error}=await sb.from('session_summaries').upsert(payload);
     if(error)throw error;
+    console.log('[social] résumé synchronisé',payload);
     const{error:eerr}=await sb.from('activity_events').insert(events);
-    if(eerr)throw eerr;
+    if(eerr)throw eerr; // le résumé est déjà enregistré même si ceci échoue : voir le catch plus bas
+    console.log('[social] événements du fil insérés',events);
     await kdel('kv','socialPending');
   }catch(e){
+    console.error('[social] échec de synchro (résumé et/ou événements), mis en attente pour retry :',e);
     await kset('kv','socialPending',{summary:payload,events:events});
   }
 }
@@ -241,6 +244,7 @@ async function socRetryPendingSync(){
   if(!pending)return;
   if(pending.user_id&&!pending.summary)pending={summary:pending,events:[]}; // compat avec l'ancien format
   if(!pending.summary||pending.summary.user_id!==SOC.user.id)return;
+  console.log('[social] retry de la synchro en attente',pending);
   try{
     const{error}=await sb.from('session_summaries').upsert(pending.summary);
     if(error)throw error;
@@ -248,8 +252,9 @@ async function socRetryPendingSync(){
       const{error:eerr}=await sb.from('activity_events').insert(pending.events);
       if(eerr)throw eerr;
     }
+    console.log('[social] retry réussi');
     await kdel('kv','socialPending');
-  }catch(e){}
+  }catch(e){console.error('[social] retry a échoué, reste en attente :',e);}
 }
 
 /* ---------- rendu : onglet Amis ---------- */
@@ -375,17 +380,21 @@ async function socUiOpenFriend(userId){
   const s=f.summary;
   let lastEvent=null;
   try{
-    const{data}=await sb.from('activity_events').select('id,type,payload,created_at')
+    const{data,error}=await sb.from('activity_events').select('id,type,payload,created_at')
       .eq('user_id',userId).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(error)console.error('[social] recherche du dernier événement de',f.pseudo,'a échoué :',error);
+    else console.log('[social] dernier événement de',f.pseudo,'(userId='+userId+') :',data);
     lastEvent=data||null;
-  }catch(e){}
+  }catch(e){console.error('[social] exception en cherchant le dernier événement de',f.pseudo,':',e);}
   let waved=lastEvent&&SOC.wavedEventIds.has(lastEvent.id);
   if(lastEvent&&!waved){
     try{
-      const{data:mine}=await sb.from('waves').select('id').eq('sender_id',SOC.user.id).eq('event_id',lastEvent.id).maybeSingle();
+      const{data:mine,error:werr}=await sb.from('waves').select('id').eq('sender_id',SOC.user.id).eq('event_id',lastEvent.id).maybeSingle();
+      if(werr)console.error('[social] vérification coucou déjà envoyé a échoué :',werr);
       if(mine){waved=true;SOC.wavedEventIds.add(lastEvent.id);}
-    }catch(e){}
+    }catch(e){console.error('[social] exception en vérifiant le coucou existant :',e);}
   }
+  console.log('[social] bouton coucou pour',f.pseudo,'-> lastEvent:',lastEvent&&lastEvent.id,'| waved:',waved,'| bouton affiché:',!!lastEvent);
   const tousDebloques=(s&&s.all_badges)||[];
   const tendanceTxt={hausse:'En hausse',stable:'Stable',pause:'En pause'}[s&&s.tendance_volume]||'—';
   openSheet(f.pseudo,'',`
