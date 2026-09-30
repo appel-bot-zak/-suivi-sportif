@@ -157,6 +157,16 @@ async function socUiSendWave(eventId,recipientId){
     if(error&&!/duplicate|unique/i.test(error.message||''))throw error;
   }catch(e){SOC.wavedEventIds.delete(eventId);renderAmis();toast(socFriendlyErr(e));}
 }
+function socWaveBanner(){
+  if(!SOC.unseenWaves.length)return'';
+  const pseudos={};SOC.friends.forEach(f=>pseudos[f.userId]=f.pseudo);
+  const noms=[...new Set(SOC.unseenWaves.map(w=>pseudos[w.sender_id]||'Un ami'))];
+  let txt;
+  if(noms.length===1)txt=`👋 <b>${esc(noms[0])}</b> t'a fait coucou`;
+  else if(noms.length===2)txt=`👋 <b>${esc(noms[0])}</b> et <b>${esc(noms[1])}</b> t'ont fait coucou`;
+  else txt=`👋 <b>${esc(noms[0])}</b> et ${noms.length-1} autres t'ont fait coucou`;
+  return`<div class="card pad" style="margin-top:16px;cursor:pointer" onclick="renderAmis()">${txt}</div>`;
+}
 function socFeedLabel(ev,pseudo){
   const p=ev.payload||{};
   if(ev.type==='session')return`🏋️ <b>${esc(pseudo)}</b> a terminé une séance <span class="mu">(${p.duree} min)</span>`;
@@ -165,11 +175,22 @@ function socFeedLabel(ev,pseudo){
   if(ev.type==='levelup')return`⬆️ <b>${esc(pseudo)}</b> est passé niveau <b>${p.niveau}</b>`;
   return'';
 }
+function socFeedDeduped(){
+  // une ligne par ami : ne garder que l'événement le plus récent de chacun
+  // (SOC.feed est déjà trié du plus récent au plus ancien)
+  const vus=new Set(),out=[];
+  for(const ev of SOC.feed){
+    if(vus.has(ev.user_id))continue;
+    vus.add(ev.user_id);out.push(ev);
+  }
+  return out;
+}
 function socFeedSection(){
-  if(!SOC.feed.length)return'';
+  const feed=socFeedDeduped();
+  if(!feed.length)return'';
   const pseudos={};SOC.friends.forEach(f=>pseudos[f.userId]=f.pseudo);
   return`<div class="sect">Fil d'activité</div>
-  <div class="card pad">${SOC.feed.map(ev=>`
+  <div class="card pad">${feed.map(ev=>`
     <div class="row">
       <div class="t" style="font-size:13px">${socFeedLabel(ev,pseudos[ev.user_id]||'—')}
         <span class="mu" style="display:block;font-size:11px;margin-top:2px">${socFmtDate(ev.created_at)}</span></div>
@@ -271,7 +292,7 @@ function socFriendlyErr(e){
 }
 function socUpdateNavBadge(){
   const dot=$('#amisDot');if(!dot)return;
-  const n=SOC.incoming.length+(SOC.unseenWaves?SOC.unseenWaves.length:0);
+  const n=SOC.incoming.length; // les coucous non lus ont leur propre bannière, pas de compteur ici
   dot.textContent=n>9?'9+':String(n);
   dot.classList.toggle('hide',!n);
 }
@@ -296,6 +317,7 @@ function renderAmis(){
     return;
   }
   v.innerHTML=`
+  ${socWaveBanner()}
   <div class="card pad" style="margin-top:16px">
     <div style="display:flex;align-items:center;gap:12px">
       <div class="lvlic" style="width:38px;height:38px;font-size:15px">${esc((SOC.profile&&SOC.profile.pseudo||'?')[0].toUpperCase())}</div>
