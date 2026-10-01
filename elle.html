@@ -416,6 +416,12 @@ const PROGRAMME = [
     {id:'crunch_m',   sets:3, lo:15, hi:20}
   ]}
 ];
+/* Incrémenter à chaque changement du programme par défaut ci-dessus.
+   Migration au chargement (voir appliquerMigrationProg) : si l'utilisateur
+   n'a jamais modifié son programme via Réglages, la nouvelle version
+   s'applique automatiquement ; s'il l'a personnalisé, on ne l'écrase pas
+   et on lui propose d'appliquer la mise à jour manuellement. */
+const PROGRAMME_VERSION = 1;
 
 'use strict';
 /* ==================== Stockage local (IndexedDB) ==================== */
@@ -436,6 +442,7 @@ async function kall(s){const d=await DB();return new Promise(r=>{const o=d.trans
 let S={prog:null,log:[],cfg:{rest:90,autoRest:true,dayIdx:0,theme:'orange',guide:true,objHebdo:4},cur:null,exosPerso:[]};
 let PH={};                     // photos : exId -> dataURL
 let view='home', openEx=0, photoTarget=null, sheetMode=null, histoEx=null, creerCtx=null, iconChoisi='Machine';
+let PROG_PERSO=false, PROG_MAJ_DISPO=false; // programme personnalisé par l'utilisateur ? mise à jour du coach en attente ?
 
 const $=s=>document.querySelector(s);
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -1166,6 +1173,12 @@ function renderRegl(){
   </div>
 
   <div class="sect">Programme</div>
+  ${PROG_MAJ_DISPO?`<div class="card pad" style="border-color:var(--pr)">
+    <b>Nouveau programme du coach disponible</b>
+    <div class="mu" style="font-size:12.5px;margin:4px 0 10px">Comme tu as toi-même modifié ton programme, la mise à jour
+    n'a pas été appliquée automatiquement pour ne pas écraser tes changements.</div>
+    <button class="btn sm" onclick="if(confirm('Remplacer ton programme actuel par la dernière version du coach ? Tes séries/reps personnalisées seront perdues.'))appliquerProgMaj()">Appliquer la mise à jour</button>
+  </div>`:''}
   ${S.prog.map((d,di)=>`<div class="card pad">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
       <b style="flex:1">${esc(d.nom)}</b><span class="pill">${d.ex.length} exercices</span></div>
@@ -1211,9 +1224,41 @@ function renderRegl(){
   <div class="mu" style="text-align:center;font-size:12px;padding:18px 0">Suivi by Zåk · double progression</div>`;
 }
 function setTheme(k){S.cfg.theme=k;saveCfg();appliquerTheme(k);render();}
+
+/* ==================== Migration du programme par défaut ====================
+   declaredVersion = version du programme actuellement en mémoire (celle
+   stockée en local, ou celle embarquée dans une sauvegarde restaurée).
+   - Si elle correspond déjà à PROGRAMME_VERSION : rien à faire.
+   - Sinon, si l'utilisateur n'a jamais personnalisé son programme (PROG_PERSO
+     false) : on applique le nouveau PROGRAMME automatiquement, sans y toucher.
+   - Sinon (il a édité séries/reps/exercices via Réglages) : on ne touche pas
+     à son programme, on note juste qu'une mise à jour du coach est en attente
+     (bannière dans Réglages, appliquerProgMaj() pour l'appliquer à la main). */
+async function appliquerMigrationProg(declaredVersion,isPerso){
+  PROG_PERSO=!!isPerso;
+  PROG_MAJ_DISPO=!!(await kget('kv','progMajDispo')); // reste en attente tant que non résolu
+  if(declaredVersion!==PROGRAMME_VERSION){
+    if(!PROG_PERSO){
+      S.prog=clone(PROGRAMME);
+      await saveProg();
+      PROG_MAJ_DISPO=false;
+    }else{
+      PROG_MAJ_DISPO=true;
+    }
+    await kset('kv','progVersion',PROGRAMME_VERSION);
+    await kset('kv','progMajDispo',PROG_MAJ_DISPO);
+  }
+}
+function marquerProgPerso(){if(!PROG_PERSO){PROG_PERSO=true;kset('kv','progPerso',true);}}
+function appliquerProgMaj(){
+  S.prog=clone(PROGRAMME);PROG_PERSO=false;PROG_MAJ_DISPO=false;
+  saveProg();kset('kv','progPerso',false);kset('kv','progMajDispo',false);
+  toast('Nouveau programme du coach appliqué');render();
+}
+
 function majProg(di,ei,f,val){const e=S.prog[di].ex[ei];e[f]=Math.max(1,+val||1);
-  if(e.hi<e.lo)e.hi=e.lo;saveProg();render();}
-function retirerProg(di,ei){S.prog[di].ex.splice(ei,1);saveProg();render();}
+  if(e.hi<e.lo)e.hi=e.lo;marquerProgPerso();saveProg();render();}
+function retirerProg(di,ei){S.prog[di].ex.splice(ei,1);marquerProgPerso();saveProg();render();}
 function ajoutProg(di){
   openSheet('Ajouter au '+S.prog[di].nom,'Il sera présent à chaque fois que tu feras cette séance',
     `<input class="search" id="rech" placeholder="Rechercher…" oninput="filtrerProg(this.value,${di})">
@@ -1230,13 +1275,14 @@ function filtrerProg(q,di){
 }
 function addProg(di,id){
   if(exo(id).cardio){toast('Un exercice cardio ne peut pas être ajouté au programme — ajoute-le pendant la séance');return;}
-  S.prog[di].ex.push({id:id,sets:3,lo:8,hi:12});saveProg();closeSheet();render();toast('Ajouté au programme');
+  S.prog[di].ex.push({id:id,sets:3,lo:8,hi:12});marquerProgPerso();saveProg();closeSheet();render();toast('Ajouté au programme');
 }
 
 /* ==================== Export / Import ==================== */
 function fichierSauvegarde(){
   const data={format:'coach-salle',v:1,date:new Date().toISOString(),
-    prog:S.prog,log:S.log,cfg:S.cfg,photos:PH,exosPerso:S.exosPerso};
+    prog:S.prog,progVersion:PROGRAMME_VERSION,progPerso:PROG_PERSO,
+    log:S.log,cfg:S.cfg,photos:PH,exosPerso:S.exosPerso};
   const nom='suivi-'+new Date().toISOString().slice(0,10)+'.json';
   return{nom:nom,blob:new Blob([JSON.stringify(data)],{type:'application/json'})};
 }
@@ -1278,6 +1324,9 @@ $('#fileIn').addEventListener('change',function(){
       S.cfg.lastBackup=S.log.length;
       await saveProg();await saveLog();await saveCfg();await saveExosPerso();
       for(const k in PH)await kset('ph',k,PH[k]);
+      // une sauvegarde peut dater d'avant une mise à jour du programme coach :
+      // on réapplique la même logique de migration qu'au démarrage
+      await appliquerMigrationProg(d.progVersion||0,d.progPerso);
       toast('Sauvegarde restaurée');render();
     }catch(e){toast('Fichier illisible ou format inattendu');}
   };
@@ -1318,6 +1367,7 @@ $('#restSkip').addEventListener('click',stopRepos);
 (async function boot(){
   try{
     S.prog=await kget('kv','prog')||clone(PROGRAMME);
+    await appliquerMigrationProg(await kget('kv','progVersion'),await kget('kv','progPerso'));
     S.log =await kget('kv','log') ||[];
     S.cfg =Object.assign({rest:90,autoRest:true,dayIdx:0,theme:'orange',guide:true,objHebdo:4},await kget('kv','cfg')||{});
     S.cur =await kget('kv','cur') ||null;
